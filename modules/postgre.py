@@ -9,7 +9,7 @@ import os
 def start_connection():
     connected = None
     try:
-        host = os.getenv("POSTGRES_HOST")
+        host = os.getenv("DATABASE_URI")
         port = os.getenv("POSTGRES_PORT", "5432")
         user = os.getenv("POSTGRES_USER")
         password = os.getenv("POSTGRES_PASSWORD")
