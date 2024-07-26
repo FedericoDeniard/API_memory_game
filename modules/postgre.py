@@ -2,16 +2,32 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 from dotenv import load_dotenv
+from urllib.parse import urlparse
+
 
 import os
 def start_connection():
     connected = None
     try:
+        # Obtener la URI de la base de datos desde las variables de entorno
+        db_uri = os.getenv("DATABASE_URI")
+        
+        # Analizar la URI
+        result = urlparse(db_uri)
+        
+        # Extraer los componentes de la URI
+        host = result.hostname
+        port = result.port
+        user = result.username
+        password = result.password
+        database = result.path[1:]  
+        
         connection = psycopg2.connect(
-            host=(os.getenv("DATABASE_URI")),
-            user=os.getenv("POSTGRES_USER"),
-            database=os.getenv("POSTGRES_NAME"),
-            password=os.getenv("POSTGRES_PASSWORD"),
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=database
         )
         print('Connection established')
         connected = connection
