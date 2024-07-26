@@ -1,14 +1,17 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
+from dotenv import load_dotenv
+
+import os
 def start_connection():
     connected = None
     try:
         connection = psycopg2.connect(
-            host="localhost",
-            user="postgres",
-            database="memory_game",
-            password="Piazzolla123"
+            host=(os.getenv("DATABASE_URI")),
+            user=os.getenv("POSTGRES_USER"),
+            database=os.getenv("POSTGRES_NAME"),
+            password=os.getenv("POSTGRES_PASSWORD"),
         )
         print('Connection established')
         connected = connection
