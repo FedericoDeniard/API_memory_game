@@ -9,19 +9,11 @@ import os
 def start_connection():
     connected = None
     try:
-        # Obtener la URI de la base de datos desde las variables de entorno
-        db_uri = os.getenv("DATABASE_URI")
-        
-        # Analizar la URI
-        result = urlparse(db_uri)
-        
-        # Extraer los componentes de la URI
-        host = result.hostname
-        port = result.port
-        user = result.username
-        password = result.password
-        database = result.path[1:]  
-        
+        host = os.getenv("POSTGRES_HOST")
+        port = os.getenv("POSTGRES_PORT", "5432")
+        user = os.getenv("POSTGRES_USER")
+        password = os.getenv("POSTGRES_PASSWORD")
+        database = os.getenv("POSTGRES_NAME")
         connection = psycopg2.connect(
             host=host,
             port=port,
