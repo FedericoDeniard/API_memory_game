@@ -1,9 +1,6 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
-from dotenv import load_dotenv
-from urllib.parse import urlparse
-
 
 import os
 def start_connection():

@@ -6,9 +6,6 @@ from modules.postgre import *
 def create_app():
     app = Flask(__name__)
     CORS(app)
-    @app.route("/")
-    def home():
-        return "Hello World!"
 
     @app.route("/leaderboard/new_record", methods=["POST"])
     def new_record():
