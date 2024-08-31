@@ -7,6 +7,8 @@ const { User } = require("./models/schemas");
 
 mongoose.connect(process.env.MONGO_URI);
 
+const { validateForm } = require("./controllers/functions");
+
 const app = express();
 const corsOptions = {
   origin: "https://federicodeniard.github.io/memory_game/",
@@ -24,8 +26,11 @@ const checkId = async (id) => {
 app.post("/leaderboard/new_record", async (req, res) => {
   try {
     const { id, username, time, date } = req.body;
+    let form = { id, username, time, date };
+    if (!validateForm(form)) {
+      return res.status(400).send({ message: "Invalid form" });
+    }
 
-    let exists = await checkId(id);
     let user = await User.findOne({ id });
 
     if (!user) {
