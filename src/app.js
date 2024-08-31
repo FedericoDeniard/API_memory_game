@@ -11,7 +11,12 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 const app = express();
-app.use(cors());
+const corsOptions = {
+  origin: "*",
+  methods: "GET,POST",
+  allowedHeaders: "Content-Type",
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const checkId = async (id) => {
