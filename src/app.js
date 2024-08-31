@@ -11,7 +11,7 @@ const { validateForm } = require("./controllers/functions");
 
 const app = express();
 const corsOptions = {
-  origin: "https://federicodeniard.github.io/memory_game/",
+  origin: "*",
   methods: "GET,POST",
   allowedHeaders: "Content-Type",
 };
