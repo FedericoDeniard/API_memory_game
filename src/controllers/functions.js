@@ -15,6 +15,23 @@ const validateForm = (form) => {
   const checkDate =
     isNumeric(form.date) && isRecentDate(parseFloat(form.date), 5);
 
+  if (!checkId) {
+    error = new Error("Invalid id");
+    console.log("Invalid id");
+  }
+  if (!checkUsername) {
+    error = new Error("Invalid username");
+    console.log(error);
+  }
+  if (!checkTime) {
+    error = new Error("Invalid time");
+    console.log(error);
+  }
+  if (!checkDate) {
+    error = new Error("Invalid date");
+    console.log(error);
+  }
+
   return checkId && checkUsername && checkTime && checkDate;
 };
 
