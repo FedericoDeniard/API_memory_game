@@ -1,6 +1,4 @@
 const { check } = require("express-validator");
-import { User } from "../models/schemas";
-
 const validateForm = (form) => {
   let checkId = form.id.isUUID();
   let checkUsername = form.username.isLength({ min: 4, max: 10 });
