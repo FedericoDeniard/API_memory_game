@@ -9,7 +9,7 @@ mongoose.connect(process.env.MONGO_URI);
 
 const app = express();
 const corsOptions = {
-  origin: "*",
+  origin: "https://federicodeniard.github.io/memory_game/",
   methods: "GET,POST",
   allowedHeaders: "Content-Type",
 };
