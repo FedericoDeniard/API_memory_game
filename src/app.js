@@ -21,22 +21,14 @@ const checkId = async (id) => {
   let exists = user ? true : false;
   return exists;
 };
-
 app.post("/leaderboard/new_record", async (req, res) => {
   try {
     const { id, username, time, date } = req.body;
 
     let exists = await checkId(id);
-    if (exists) {
-      let user = await User.findOne({ id });
-      if (user.time > time) {
-        console.log("Record beated");
-        await User.updateOne({ id }, { $set: { time, date } });
-        res.status(200).send(data);
-      } else {
-        res.status(200).send({ message: "Record not beated" });
-      }
-    } else {
+    let user = await User.findOne({ id });
+
+    if (!user) {
       const user = new User({
         id,
         username,
@@ -45,8 +37,22 @@ app.post("/leaderboard/new_record", async (req, res) => {
       });
       const data = await user.save();
       res.status(201).send(data);
+    } else {
+      await User.findOneAndUpdate(
+        { id },
+        {
+          $set: {
+            time,
+            date,
+          },
+        },
+        { new: true }
+      );
+
+      res.status(200).send({ message: "Record updated" });
     }
   } catch (error) {
+    console.error("Error saving record:", error);
     res.status(500).send(error);
   }
 });
