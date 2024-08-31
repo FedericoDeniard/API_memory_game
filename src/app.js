@@ -18,11 +18,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-const checkId = async (id) => {
-  const user = await User.findOne({ id });
-  let exists = user ? true : false;
-  return exists;
-};
 app.post("/leaderboard/new_record", async (req, res) => {
   try {
     const { id, username, time, date } = req.body;
@@ -65,8 +60,8 @@ app.post("/leaderboard/new_record", async (req, res) => {
 app.get("/leaderboard", async (req, res) => {
   try {
     const data = await User.find();
-    if (!data) {
-      res.status(404).send({ message: "Data not found" });
+    if (data.length === 0) {
+      res.status(404).send({ message: "No records found" });
     }
     res.status(200).send(data);
   } catch (error) {
@@ -74,5 +69,6 @@ app.get("/leaderboard", async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server running on port 3000"));
 module.exports = app;
