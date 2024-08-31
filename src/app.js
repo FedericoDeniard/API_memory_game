@@ -5,10 +5,7 @@ require("dotenv").config();
 
 const { User } = require("./models/schemas");
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(process.env.MONGO_URI);
 
 const app = express();
 const corsOptions = {
@@ -32,7 +29,7 @@ app.post("/leaderboard/new_record", async (req, res) => {
     let exists = await checkId(id);
     if (exists) {
       let user = await User.findOne({ id });
-      if (user.time < time) {
+      if (user.time > time) {
         await User.updateOne({ id }, { $set: { time, date } });
       } else {
         res.status(200).send({ message: "Record not beated" });
