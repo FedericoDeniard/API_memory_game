@@ -30,7 +30,9 @@ app.post("/leaderboard/new_record", async (req, res) => {
     if (exists) {
       let user = await User.findOne({ id });
       if (user.time > time) {
+        console.log("Record beated");
         await User.updateOne({ id }, { $set: { time, date } });
+        res.status(200).send(data);
       } else {
         res.status(200).send({ message: "Record not beated" });
       }
