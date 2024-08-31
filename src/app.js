@@ -11,7 +11,7 @@ const { validateForm } = require("./controllers/functions");
 
 const app = express();
 const corsOptions = {
-  origin: "*",
+  origin: "https://federicodeniard.github.io",
   methods: "GET,POST",
   allowedHeaders: "Content-Type",
 };
