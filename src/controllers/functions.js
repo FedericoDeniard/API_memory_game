@@ -6,7 +6,7 @@ const validateForm = (form) => {
   const isNumeric = (value) => !isNaN(value);
   const isGreaterThan = (value, min) => value > min;
   const isRecentDate = (date, minutes) =>
-    date >= Date.now() - minutes * 60 * 1000;
+    date >= Math.floor(Date.now() / 1000) - minutes * 60;
 
   const checkId = isUUID(form.id);
   const checkUsername = isLength(form.username);
