@@ -14,21 +14,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const checkId = (id) => {
-  let exist;
-  if (User.findOne({ id })) {
-    exist = true;
-  } else {
-    exist = false;
-  }
-  return exist;
+const checkId = async (id) => {
+  const user = await User.findOne({ id });
+  let exists = user ? true : false;
+  return exists;
 };
 
 app.post("/leaderboard/new_record", async (req, res) => {
   try {
     const { id, username, time, date } = req.body;
 
-    if (checkId(id)) {
+    let exists = await checkId(id);
+    if (exists) {
       let user = await User.findOne({ id });
       if (user.time < time) {
         await User.updateOne({ id }, { $set: { time, date } });
@@ -53,6 +50,9 @@ app.post("/leaderboard/new_record", async (req, res) => {
 app.get("/leaderboard", async (req, res) => {
   try {
     const data = await User.find();
+    if (!data) {
+      res.status(404).send({ message: "Data not found" });
+    }
     res.status(200).send(data);
   } catch (error) {
     res.status(500).send(error);

@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
 const UserRecord = new mongoose.Schema({
-  id: Number,
+  id: String,
   username: String,
   time: Number,
-  date: Date,
+  date: Number,
 });
 
 const User = mongoose.model("User", UserRecord);
