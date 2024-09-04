@@ -2,9 +2,11 @@
   "name": "api_memory_game",
   "version": "1.0.0",
   "main": "src/app.js",
+  "type": "module",
   "scripts": {
     "start": "node src/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --watch src/app.js"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +19,11 @@
     "express-validator": "^7.2.0",
     "mongoose": "^8.6.0",
     "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "standard": "^17.1.0"
+  },
+  "eslintConfig": {
+    "extends": "standard"
   }
 }
