@@ -57,13 +57,43 @@ app.post("/leaderboard/new_record", async (req, res) => {
   }
 });
 
-app.get("/leaderboard", async (req, res) => {
+app.get("/top-leaderboard", async (req, res) => {
   try {
-    const data = await User.find();
+    const data = await User.find()
+      .sort({ time: 1 })
+      .limit(10)
+      .select("id username time date");
     if (data.length === 0) {
       res.status(404).send({ message: "No records found" });
     }
-    res.status(200).send(data);
+    const processedData = data.map((user) => ({
+      id: user.id.slice(-4),
+      username: user.username,
+      time: user.time,
+      date: user.date,
+    }));
+    res.status(200).send(processedData);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+app.get("/last-leaderboard", async (req, res) => {
+  try {
+    const data = await User.find()
+      .sort({ date: -1 })
+      .limit(10)
+      .select("id username time date");
+    if (data.length === 0) {
+      res.status(404).send({ message: "No records found" });
+    }
+    const processedData = data.map((user) => ({
+      id: user.id.slice(-4),
+      username: user.username,
+      time: user.time,
+      date: user.date,
+    }));
+    res.status(200).send(processedData);
   } catch (error) {
     res.status(500).send(error);
   }
