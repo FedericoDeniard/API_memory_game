@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import crypto from 'crypto'
+import bcrypt from 'bcrypt'
 
 const UserSchema = new mongoose.Schema({
   username: {
@@ -21,20 +22,47 @@ const UserSchema = new mongoose.Schema({
 const User = mongoose.model('User', UserSchema)
 
 export class GuessUserRepository {
-  static create ({ username, password }) {
+  static async create ({ username, password }) {
     // 1. Validate the form (Optional: zod)
-    if (typeof username !== 'string') throw new Error('Username must be a string')
-    if (username.length < 3) throw new Error('Username must be at least 3 characters long')
-
-    if (typeof password !== 'string') throw new Error('Password must be a string')
-    if (password.length < 6) throw new Error('Password must be at least 6 characters long')
+    Validation.username(username)
+    Validation.password(password)
 
     // 2. Check if the user already exists
-    const user = User.findOne({ username })
+    const user = await User.findOne({ username })
     if (user) throw new Error('User already exists')
 
-    const id = crypto.randomUUID()
+    // 3. Hash the password
+    const hasedPassword = await bcrypt.hash(password, 10)
+    const id = crypto.randomUUID() // TODO this can be replaced to mongodb _id
+    await new User({ username, password: hasedPassword, id }).save()
+
+    return id
   }
 
-  static login ({ username, password }) {}
+  static async login ({ username, password }) {
+    Validation.username(username)
+    Validation.password(password)
+
+    const user = await User.findOne({ username })
+    if (!user) throw new Error('User not found')
+
+    const isValid = await bcrypt.compare(password, user.password)
+    if (!isValid) throw new Error('Invalid password')
+
+    const publicUser = { id: user.id, username: user.username }
+
+    return publicUser
+  }
+}
+
+class Validation {
+  static username (username) {
+    if (typeof username !== 'string') throw new Error('Username must be a string')
+    if (username.length < 3) throw new Error('Username must be at least 3 characters long')
+  }
+
+  static password (password) {
+    if (typeof password !== 'string') throw new Error('Password must be a string')
+    if (password.length < 6) throw new Error('Password must be at least 6 characters long')
+  }
 }

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login & Register</title>
+  <style>
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <% if (user) { %>
+    <!-- Panel de Bienvenida y Cierre de Sesión -->
+    <div id="welcomePanel">
+      <h1 id="welcomeMessage">Hola <%= user.user %>!</h1>
+      <p>
+        <button onclick="logout()">Logout</button>
+      </p>
+      <div id="logoutError" class="error"></div>
+    </div>
+  <% } else { %>
+    <!-- Panel de Login y Registro -->
+    <div id="authPanel">
+      <h1>Login</h1>
+      <p>
+        <label for="username">Username:</label>
+        <input type="text" id="username">
+      </p>
+      <p>
+        <label for="password">Password:</label>
+        <input type="password" id="password">
+      </p>
+      <p>
+        <button onclick="login()">Login</button>
+      </p>
+      <div id="loginError" class="error"></div>
+
+      <h1>Register</h1>
+      <p>
+        <label for="newUsername">Username:</label>
+        <input type="text" id="newUsername">
+      </p>
+      <p>
+        <label for="newPassword">Password:</label>
+        <input type="password" id="newPassword">
+      </p>
+      <p>
+        <button onclick="register()">Register</button>
+      </p>
+      <div id="registerError" class="error"></div>
+    </div>
+  <% } %>
+
+  <script>
+    // Función para verificar si el usuario está autenticado
+    async function checkAuth() {
+      try {
+        const response = await fetch('/protected', { method: 'GET', credentials: 'include' });
+
+        if (response.ok) {
+          const result = await response.text();
+          const username = result.match(/Hola (\w+)/)[1]; // Extrae el nombre de usuario del mensaje "Hola"
+          document.getElementById('authPanel').classList.add('hidden');
+          document.getElementById('welcomePanel').classList.remove('hidden');
+          document.getElementById('welcomeMessage').innerText = `Hola ${username}!`;
+        } else {
+          document.getElementById('authPanel').classList.remove('hidden');
+          document.getElementById('welcomePanel').classList.add('hidden');
+        }
+      } catch (error) {
+        document.getElementById('authPanel').classList.remove('hidden');
+        document.getElementById('welcomePanel').classList.add('hidden');
+      }
+    }
+
+    // Login function
+    async function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password }),
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          window.location.reload(); // Recargar la página para actualizar el estado de autenticación
+        } else {
+          const result = await response.text();
+          document.getElementById('loginError').innerText = `Login fallido: ${result}`;
+        }
+      } catch (error) {
+        document.getElementById('loginError').innerText = `Error: ${error.message}`;
+      }
+    }
+
+    // Register function
+    async function register() {
+      const newUsername = document.getElementById('newUsername').value;
+      const newPassword = document.getElementById('newPassword').value;
+
+      try {
+        const response = await fetch('/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username: newUsername, password: newPassword })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          document.getElementById('registerError').innerText = `Usuario registrado con ID: ${result.id}`;
+        } else {
+          const error = await response.text();
+          document.getElementById('registerError').innerText = `Registro fallido: ${error}`;
+        }
+      } catch (error) {
+        document.getElementById('registerError').innerText = `Error en el registro: ${error.message}`;
+      }
+    }
+
+    // Logout function
+    async function logout() {
+      try {
+        const response = await fetch('/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          window.location.reload(); // Recargar la página para actualizar el estado de autenticación
+        } else {
+          const result = await response.text();
+          document.getElementById('logoutError').innerText = `Logout fallido: ${result}`;
+        }
+      } catch (error) {
+        document.getElementById('logoutError').innerText = `Error en el logout: ${error.message}`;
+      }
+    }
+
+    // Verificar autenticación al cargar la página
+    checkAuth();
+  </script>
+</body>
+</html>
