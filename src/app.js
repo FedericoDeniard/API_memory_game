@@ -28,7 +28,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' }
+  cookie: { secure: process.env.NODE_ENV === 'production', sameSite: 'lax' }
 }))
 
 app.use((req, res, next) => {
