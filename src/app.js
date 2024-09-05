@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser'
 
 import { Record } from './models/schemas.js'
 import { checkNewRecord, validateForm } from './controllers/functions.js'
-import { GuessUserRepository } from './controllers/login.js'
+import { UserRepository } from './controllers/login.js'
 import jwt from 'jsonwebtoken'
 
 dotenv.config()
@@ -131,7 +131,7 @@ app.get('/a', (req, res) => {
 app.post('/login', async (req, res) => {
   const { username, password } = req.body
   try {
-    const user = await GuessUserRepository.login({ username, password })
+    const user = await UserRepository.login({ username, password })
     const token = jwt.sign({ id: user._id, user: user.username }, process.env.JWT_SECRET, {
       expiresIn: '1h'
     })
@@ -151,7 +151,7 @@ app.post('/login', async (req, res) => {
 app.post('/register', async (req, res) => {
   const { username, password } = req.body
   try {
-    const _id = await GuessUserRepository.create({ username, password })
+    const _id = await UserRepository.create({ username, password })
     res.send({ _id })
   } catch (error) {
     res.status(400).send(error.message) // TODO This can give too much information

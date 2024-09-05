@@ -1,4 +1,4 @@
-import { GuessUser } from '../models/schemas.js'
+import { Record } from '../models/schemas.js'
 
 const validateForm = (form) => {
   const isNumeric = (value) => !isNaN(value)
@@ -29,7 +29,7 @@ const validateForm = (form) => {
 export { validateForm }
 
 export const checkNewRecord = (time, _id) => {
-  const user = GuessUser.findOne({ _id })
+  const user = Record.findOne({ _id })
   let isNewRecord = false
   if (user.time > time) {
     isNewRecord = true

@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import crypto from 'crypto'
 import bcrypt from 'bcrypt'
 
 const UserSchema = new mongoose.Schema({
@@ -16,7 +15,7 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', UserSchema)
 
-export class GuessUserRepository {
+export class UserRepository {
   static async create ({ username, password }) {
     // 1. Validate the form (Optional: zod)
     Validation.username(username)
