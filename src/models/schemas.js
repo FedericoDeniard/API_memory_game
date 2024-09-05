@@ -7,5 +7,5 @@ const UserRecord = new mongoose.Schema({
   date: Number,
 });
 
-const User = mongoose.model("User", UserRecord);
+const User = mongoose.model("GuessUser", UserRecord);
 module.exports = { User };
