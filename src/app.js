@@ -36,7 +36,7 @@ app.post("/leaderboard/new_record", async (req, res) => {
         date,
       });
       const data = await user.save();
-      res.status(201).send(data);
+      return res.status(201).send(data);
     } else {
       await User.findOneAndUpdate(
         { id },
@@ -49,7 +49,7 @@ app.post("/leaderboard/new_record", async (req, res) => {
         { new: true }
       );
 
-      res.status(200).send({ message: "Record updated" });
+      return res.status(200).send({ message: "Record updated" });
     }
   } catch (error) {
     console.error("Error saving record:", error);
@@ -64,7 +64,7 @@ app.get("/top-leaderboard", async (req, res) => {
       .limit(10)
       .select("id username time date");
     if (data.length === 0) {
-      res.status(404).send({ message: "No records found" });
+      return res.status(404).send({ message: "No records found" });
     }
     const processedData = data.map((user) => ({
       id: user.id.slice(-4),
@@ -72,9 +72,9 @@ app.get("/top-leaderboard", async (req, res) => {
       time: user.time,
       date: user.date,
     }));
-    res.status(200).send(processedData);
+    return res.status(200).send(processedData);
   } catch (error) {
-    res.status(500).send(error);
+    return res.status(500).send(error);
   }
 });
 
@@ -85,7 +85,7 @@ app.get("/last-leaderboard", async (req, res) => {
       .limit(10)
       .select("id username time date");
     if (data.length === 0) {
-      res.status(404).send({ message: "No records found" });
+      return res.status(404).send({ message: "No records found" });
     }
     const processedData = data.map((user) => ({
       id: user.id.slice(-4),
@@ -93,9 +93,9 @@ app.get("/last-leaderboard", async (req, res) => {
       time: user.time,
       date: user.date,
     }));
-    res.status(200).send(processedData);
+    return res.status(200).send(processedData);
   } catch (error) {
-    res.status(500).send(error);
+    return res.status(500).send(error);
   }
 });
 
