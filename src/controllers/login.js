@@ -22,7 +22,7 @@ export class UserRepository {
     Validation.password(password)
 
     // 2. Check if the user already exists
-    const user = await User.findOne({ username })
+    const user = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } })
     if (user) throw new Error('User already exists')
 
     // 3. Hash the password
