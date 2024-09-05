@@ -36,10 +36,11 @@ app.use((req, res, next) => {
 
   req.session.user = null
   try {
-    const data = jwt.verify(token, process.env.JWT_SECRET)
-    req.session.user = data
+    if (token) {
+      const data = jwt.verify(token, process.env.JWT_SECRET)
+      req.session.user = data
+    }
   } catch (error) {
-    console.error('JWT verification failed:', error) // Log JWT verification errors
   }
   next()
 })
@@ -48,42 +49,46 @@ app.set('view engine', 'ejs')
 
 app.post('/leaderboard/new_record', async (req, res) => {
   const user = req.session.user
+  console.log('User trying new record: ', user)
 
   if (!user) {
-    return res.status(403).send({ message: 'Need to be login to add a record' })
+    return res.status(403).send({ message: 'Need to be logged in to add a record' })
   }
 
   try {
     const { time, date } = req.body
-
     const form = { time, date }
+
     if (!validateForm(form)) {
       return res.status(400).send()
     }
 
-    const recordExists = await Record.findOne({ id: user._id })
+    const userID = new mongoose.Types.ObjectId(user.id)
+    console.log('UserID desde token: ', userID)
+
+    const recordExists = await Record.findOne({ id: userID })
+    console.log('Record exists:', recordExists)
+
     if (recordExists) {
-      if (checkNewRecord(time, user._id)) {
+      const isNewRecord = await checkNewRecord(time, userID)
+      console.log('Is new record:', isNewRecord)
+
+      if (isNewRecord) {
         await Record.findOneAndUpdate(
-          { id: user._id },
-          {
-            $set: {
-              time,
-              date
-            }
-          },
+          { id: userID },
+          { $set: { time, date } },
           { new: true }
         )
         res.status(200).send({ message: 'Record updated' })
       } else {
-        res.status(400).send({ message: 'Record hasn\'t been beated' })
+        res.status(400).send({ message: 'Record hasn\'t been beaten' })
       }
     } else {
-      await Record.create({ id: user._id, username: user.username, time, date })
+      await Record.create({ id: userID, username: user.user, time, date })
       res.status(200).send({ message: 'Record created' })
     }
   } catch (error) {
-    console.error('Error saving record:', error) // Log errors when saving record
+    console.error('Error saving record:', error)
     res.status(500).send(error)
   }
 })
@@ -100,9 +105,9 @@ app.get('/top-leaderboard', async (req, res) => {
       time: user.time,
       date: user.date
     }))
+
     return res.status(200).send(processedData)
   } catch (error) {
-    console.error('Error fetching top leaderboard:', error) // Log errors when fetching leaderboard
     return res.status(500).send(error)
   }
 })
@@ -121,7 +126,6 @@ app.get('/last-leaderboard', async (req, res) => {
     }))
     return res.status(200).send(processedData)
   } catch (error) {
-    console.error('Error fetching last leaderboard:', error) // Log errors when fetching last leaderboard
     return res.status(500).send(error)
   }
 })
@@ -138,7 +142,7 @@ app.post('/login', async (req, res) => {
 
   try {
     const user = await UserRepository.login({ username, password })
-    const token = jwt.sign({ id: user._id, user: user.username }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user.id, user: user.username }, process.env.JWT_SECRET, {
       expiresIn: '1h'
     })
 
@@ -151,7 +155,6 @@ app.post('/login', async (req, res) => {
       })
       .send(user)
   } catch (error) {
-    console.error('Login error:', error) // Log login errors
     return res.status(401).send(error.message) // TODO This can give too much information
   }
 })
@@ -163,7 +166,6 @@ app.post('/register', async (req, res) => {
     const _id = await UserRepository.create({ username, password })
     res.status(200).send({ id: _id })
   } catch (error) {
-    console.error('Registration error:', error) // Log registration errors
     res.status(400).send(error.message) // TODO This can give too much information
   }
 })

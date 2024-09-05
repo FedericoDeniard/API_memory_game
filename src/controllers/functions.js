@@ -28,8 +28,9 @@ const validateForm = (form) => {
 
 export { validateForm }
 
-export const checkNewRecord = (time, _id) => {
-  const user = Record.findOne({ _id })
+export const checkNewRecord = async (time, id) => {
+  console.log('El id a buscar es: ', id)
+  const user = await Record.findOne({ id })
   let isNewRecord = false
   if (user.time > time) {
     isNewRecord = true
