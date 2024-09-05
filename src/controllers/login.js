@@ -52,6 +52,7 @@ class Validation {
   static username (username) {
     if (typeof username !== 'string') throw new Error('Username must be a string')
     if (username.length < 3) throw new Error('Username must be at least 3 characters long')
+    if (username.length > 10) throw new Error('Username must be at most 10 characters long')
   }
 
   static password (password) {

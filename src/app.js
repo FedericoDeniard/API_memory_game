@@ -16,9 +16,10 @@ mongoose.connect(process.env.MONGO_URI)
 
 const app = express()
 const corsOptions = {
-  origin: 'https://federicodeniard.github.io',
+  origin: 'http://localhost:5173',
   methods: 'GET,POST',
-  allowedHeaders: 'Content-Type'
+  allowedHeaders: 'Content-Type',
+  credentials: true
 }
 app.use(cors(corsOptions))
 app.use(express.json())
@@ -27,7 +28,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: process.env.NODE_ENV === 'production' }
+  cookie: { secure: process.env.NODE_ENV === 'production', sameSite: 'lax' }
 }))
 
 app.use((req, res, next) => {
@@ -37,23 +38,29 @@ app.use((req, res, next) => {
   try {
     const data = jwt.verify(token, process.env.JWT_SECRET)
     req.session.user = data
-  } catch {
-  } next()
+  } catch (error) {
+    console.error('JWT verification failed:', error) // Log JWT verification errors
+  }
+  next()
 })
 
 app.set('view engine', 'ejs')
 
 app.post('/leaderboard/new_record', async (req, res) => {
   const user = req.session.user
+
   if (!user) {
     return res.status(403).send({ message: 'Need to be login to add a record' })
   }
+
   try {
     const { time, date } = req.body
+
     const form = { time, date }
     if (!validateForm(form)) {
       return res.status(400).send()
     }
+
     const recordExists = await Record.findOne({ id: user._id })
     if (recordExists) {
       if (checkNewRecord(time, user._id)) {
@@ -76,7 +83,7 @@ app.post('/leaderboard/new_record', async (req, res) => {
       res.status(200).send({ message: 'Record created' })
     }
   } catch (error) {
-    console.error('Error saving record:', error)
+    console.error('Error saving record:', error) // Log errors when saving record
     res.status(500).send(error)
   }
 })
@@ -87,17 +94,16 @@ app.get('/top-leaderboard', async (req, res) => {
       .sort({ time: 1 })
       .limit(10)
       .select('username time date')
-    if (data.length === 0) {
-      res.status(404).send({ message: 'No records found' })
-    }
+
     const processedData = data.map((user) => ({
       username: user.username,
       time: user.time,
       date: user.date
     }))
-    res.status(200).send(processedData)
+    return res.status(200).send(processedData)
   } catch (error) {
-    res.status(500).send(error)
+    console.error('Error fetching top leaderboard:', error) // Log errors when fetching leaderboard
+    return res.status(500).send(error)
   }
 })
 
@@ -107,17 +113,16 @@ app.get('/last-leaderboard', async (req, res) => {
       .sort({ date: -1 })
       .limit(10)
       .select('username time date')
-    if (data.length === 0) {
-      res.status(404).send({ message: 'No records found' })
-    }
+
     const processedData = data.map((user) => ({
       username: user.username,
       time: user.time,
       date: user.date
     }))
-    res.status(200).send(processedData)
+    return res.status(200).send(processedData)
   } catch (error) {
-    res.status(500).send(error)
+    console.error('Error fetching last leaderboard:', error) // Log errors when fetching last leaderboard
+    return res.status(500).send(error)
   }
 })
 
@@ -130,12 +135,14 @@ app.get('/a', (req, res) => {
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body
+
   try {
     const user = await UserRepository.login({ username, password })
     const token = jwt.sign({ id: user._id, user: user.username }, process.env.JWT_SECRET, {
       expiresIn: '1h'
     })
-    res
+
+    return res
       .cookie('access_token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -144,16 +151,19 @@ app.post('/login', async (req, res) => {
       })
       .send(user)
   } catch (error) {
-    res.status(401).send(error.message) // TODO This can give too much information
+    console.error('Login error:', error) // Log login errors
+    return res.status(401).send(error.message) // TODO This can give too much information
   }
 })
 
 app.post('/register', async (req, res) => {
   const { username, password } = req.body
+
   try {
     const _id = await UserRepository.create({ username, password })
-    res.send({ _id })
+    res.status(200).send({ id: _id })
   } catch (error) {
+    console.error('Registration error:', error) // Log registration errors
     res.status(400).send(error.message) // TODO This can give too much information
   }
 })
@@ -164,6 +174,7 @@ app.post('/logout', (req, res) => {
 
 app.get('/protected', (req, res) => {
   const user = req.session.user
+
   if (!user) {
     return res.status(403).send('Unauthorized')
   }
