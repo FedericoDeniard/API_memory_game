@@ -16,11 +16,9 @@ const validateForm = (form) => {
 
   if (!checkTime) {
     error = new Error('Invalid time')
-    console.log(error)
   }
   if (!checkDate) {
     error = new Error('Invalid date')
-    console.log(error)
   }
 
   return checkTime && checkDate
@@ -29,7 +27,6 @@ const validateForm = (form) => {
 export { validateForm }
 
 export const checkNewRecord = async (time, id) => {
-  console.log('El id a buscar es: ', id)
   const user = await Record.findOne({ id })
   let isNewRecord = false
   if (user.time > time) {
