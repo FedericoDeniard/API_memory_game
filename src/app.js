@@ -33,12 +33,10 @@ app.use(session({
 
 app.use((req, res, next) => {
   const token = req.cookies.access_token
-  console.log(token)
   req.session.user = null
   try {
     if (token) {
       const data = jwt.verify(token, process.env.JWT_SECRET)
-      console.log(data)
       req.session.user = data
     }
   } catch (error) {
@@ -50,7 +48,6 @@ app.set('view engine', 'ejs')
 
 app.post('/leaderboard/new_record', async (req, res) => {
   const user = req.session.user
-  console.log('User trying new record: ', user)
 
   if (!user) {
     return res.status(403).send({ message: 'Need to be logged in to add a record' })
@@ -65,14 +62,11 @@ app.post('/leaderboard/new_record', async (req, res) => {
     }
 
     const userID = new mongoose.Types.ObjectId(user.id)
-    console.log('UserID desde token: ', userID)
 
     const recordExists = await Record.findOne({ id: userID })
-    console.log('Record exists:', recordExists)
 
     if (recordExists) {
       const isNewRecord = await checkNewRecord(time, userID)
-      console.log('Is new record:', isNewRecord)
 
       if (isNewRecord) {
         await Record.findOneAndUpdate(
@@ -158,6 +152,25 @@ app.post('/login', async (req, res) => {
   } catch (error) {
     return res.status(401).send(error.message) // TODO This can give too much information
   }
+})
+
+app.post('/refresh-login', async (req, res) => {
+  const user = req.session.user
+
+  if (!user) {
+    return res.status(401).send('Unauthorized')
+  }
+  const token = jwt.sign({ id: user.id, user: user.username }, process.env.JWT_SECRET, {
+    expiresIn: '1h'
+  })
+  return res
+    .cookie('access_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 1000 * 60 * 60 // 1 hora
+    })
+    .send(user)
 })
 
 app.post('/register', async (req, res) => {
