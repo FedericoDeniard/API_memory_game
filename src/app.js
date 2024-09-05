@@ -16,7 +16,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 const app = express()
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: 'https://https://federicodeniard.github.io/',
   methods: 'GET,POST',
   allowedHeaders: 'Content-Type',
   credentials: true
