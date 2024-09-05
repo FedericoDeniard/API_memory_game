@@ -2,7 +2,7 @@ import { validate as validateUUID } from 'uuid'
 
 const validateForm = (form) => {
   const isUUID = (id) => validateUUID(id)
-  const isLength = (username) => username.length >= 4 && username.length <= 10
+  const isLength = (GuessUsername) => GuessUsername.length >= 4 && GuessUsername.length <= 10
   const isNumeric = (value) => !isNaN(value)
   const isGreaterThan = (value, min) => value > min
   const isRecentDate = (date, minutes) => {
@@ -11,7 +11,7 @@ const validateForm = (form) => {
   }
 
   const checkId = isUUID(form.id)
-  const checkUsername = isLength(form.username)
+  const checkGuessUsername = isLength(form.GuessUsername)
   const checkTime =
     isNumeric(form.time) && isGreaterThan(parseFloat(form.time), 10000)
   const checkDate =
@@ -21,8 +21,8 @@ const validateForm = (form) => {
     error = new Error('Invalid id')
     console.log('Invalid id')
   }
-  if (!checkUsername) {
-    error = new Error('Invalid username')
+  if (!checkGuessUsername) {
+    error = new Error('Invalid GuessUsername')
     console.log(error)
   }
   if (!checkTime) {
@@ -34,7 +34,7 @@ const validateForm = (form) => {
     console.log(error)
   }
 
-  return checkId && checkUsername && checkTime && checkDate
+  return checkId && checkGuessUsername && checkTime && checkDate
 }
 
 export { validateForm }

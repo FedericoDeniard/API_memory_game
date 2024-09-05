@@ -3,7 +3,7 @@ import cors from 'cors'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 
-import { User } from './models/schemas.js'
+import { GuessUser } from './models/schemas.js'
 import { validateForm } from './controllers/functions.js'
 
 dotenv.config()
@@ -27,10 +27,10 @@ app.post('/leaderboard/new_record', async (req, res) => {
       return res.status(400).send({ message: 'Invalid form' })
     }
 
-    const user = await User.findOne({ id })
+    const user = await GuessUser.findOne({ id })
 
     if (!user) {
-      const newUser = new User({
+      const newUser = new GuessUser({
         id,
         username,
         time,
@@ -39,7 +39,7 @@ app.post('/leaderboard/new_record', async (req, res) => {
       const data = await newUser.save()
       res.status(201).send(data)
     } else {
-      await User.findOneAndUpdate(
+      await GuessUser.findOneAndUpdate(
         { id },
         {
           $set: {
@@ -60,7 +60,7 @@ app.post('/leaderboard/new_record', async (req, res) => {
 
 app.get('/top-leaderboard', async (req, res) => {
   try {
-    const data = await User.find()
+    const data = await GuessUser.find()
       .sort({ time: 1 })
       .limit(10)
       .select('id username time date')
@@ -81,7 +81,7 @@ app.get('/top-leaderboard', async (req, res) => {
 
 app.get('/last-leaderboard', async (req, res) => {
   try {
-    const data = await User.find()
+    const data = await GuessUser.find()
       .sort({ date: -1 })
       .limit(10)
       .select('id username time date')
@@ -101,6 +101,14 @@ app.get('/last-leaderboard', async (req, res) => {
 })
 
 // Login
+
+app.post('/login', (req, res) => {
+  res.json('Hola Fede')
+})
+app.post('/register', (req, res) => {})
+app.post('/logout', (req, res) => {})
+
+app.post('/protected', (req, res) => {})
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => console.log('Server running on port ' + PORT))
