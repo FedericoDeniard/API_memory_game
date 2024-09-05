@@ -1,12 +1,12 @@
 import mongoose from 'mongoose'
 
-const GuessUserRecord = new mongoose.Schema({
+const RecordSchema = new mongoose.Schema({
   id: String,
-  GuessUsername: String,
+  username: String,
   time: Number,
   date: Number
 })
 
-const GuessUser = mongoose.model('GuessUser', GuessUserRecord)
+const Record = mongoose.model('Record', RecordSchema)
 
-export { GuessUser }
+export { Record }

@@ -5,8 +5,8 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 
-import { GuessUser } from './models/schemas.js'
-import { validateForm } from './controllers/functions.js'
+import { Record } from './models/schemas.js'
+import { checkNewRecord, validateForm } from './controllers/functions.js'
 import { GuessUserRepository } from './controllers/login.js'
 import jwt from 'jsonwebtoken'
 
@@ -44,37 +44,36 @@ app.use((req, res, next) => {
 app.set('view engine', 'ejs')
 
 app.post('/leaderboard/new_record', async (req, res) => {
+  const user = req.session.user
+  if (!user) {
+    return res.status(403).send({ message: 'Need to be login to add a record' })
+  }
   try {
-    const { id, username, time, date } = req.body
-    const form = { id, username, time, date }
+    const { time, date } = req.body
+    const form = { time, date }
     if (!validateForm(form)) {
-      return res.status(400).send({ message: 'Invalid form' })
+      return res.status(400).send()
     }
-
-    const user = await GuessUser.findOne({ id })
-
-    if (!user) {
-      const newUser = new GuessUser({
-        id,
-        username,
-        time,
-        date
-      })
-      const data = await newUser.save()
-      res.status(201).send(data)
+    const recordExists = await Record.findOne({ id: user._id })
+    if (recordExists) {
+      if (checkNewRecord(time, user._id)) {
+        await Record.findOneAndUpdate(
+          { id: user._id },
+          {
+            $set: {
+              time,
+              date
+            }
+          },
+          { new: true }
+        )
+        res.status(200).send({ message: 'Record updated' })
+      } else {
+        res.status(400).send({ message: 'Record hasn\'t been beated' })
+      }
     } else {
-      await GuessUser.findOneAndUpdate(
-        { id },
-        {
-          $set: {
-            time,
-            date
-          }
-        },
-        { new: true }
-      )
-
-      res.status(200).send({ message: 'Record updated' })
+      await Record.create({ id: user._id, username: user.username, time, date })
+      res.status(200).send({ message: 'Record created' })
     }
   } catch (error) {
     console.error('Error saving record:', error)
@@ -84,15 +83,14 @@ app.post('/leaderboard/new_record', async (req, res) => {
 
 app.get('/top-leaderboard', async (req, res) => {
   try {
-    const data = await GuessUser.find()
+    const data = await Record.find()
       .sort({ time: 1 })
       .limit(10)
-      .select('id username time date')
+      .select('username time date')
     if (data.length === 0) {
       res.status(404).send({ message: 'No records found' })
     }
     const processedData = data.map((user) => ({
-      id: user.id.slice(-4),
       username: user.username,
       time: user.time,
       date: user.date
@@ -105,15 +103,14 @@ app.get('/top-leaderboard', async (req, res) => {
 
 app.get('/last-leaderboard', async (req, res) => {
   try {
-    const data = await GuessUser.find()
+    const data = await Record.find()
       .sort({ date: -1 })
       .limit(10)
-      .select('id username time date')
+      .select('username time date')
     if (data.length === 0) {
       res.status(404).send({ message: 'No records found' })
     }
     const processedData = data.map((user) => ({
-      id: user.id.slice(-4),
       username: user.username,
       time: user.time,
       date: user.date
@@ -135,7 +132,7 @@ app.post('/login', async (req, res) => {
   const { username, password } = req.body
   try {
     const user = await GuessUserRepository.login({ username, password })
-    const token = jwt.sign({ id: user.id, user: user.username }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id, user: user.username }, process.env.JWT_SECRET, {
       expiresIn: '1h'
     })
     res
@@ -154,8 +151,8 @@ app.post('/login', async (req, res) => {
 app.post('/register', async (req, res) => {
   const { username, password } = req.body
   try {
-    const id = await GuessUserRepository.create({ username, password })
-    res.send({ id })
+    const _id = await GuessUserRepository.create({ username, password })
+    res.send({ _id })
   } catch (error) {
     res.status(400).send(error.message) // TODO This can give too much information
   }

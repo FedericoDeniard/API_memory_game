@@ -11,11 +11,6 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
-  },
-  id: {
-    type: String,
-    required: true,
-    unique: true
   }
 })
 
@@ -33,10 +28,9 @@ export class GuessUserRepository {
 
     // 3. Hash the password
     const hasedPassword = await bcrypt.hash(password, 10)
-    const id = crypto.randomUUID() // TODO this can be replaced to mongodb _id
-    await new User({ username, password: hasedPassword, id }).save()
+    const newUser = await new User({ username, password: hasedPassword }).save()
 
-    return id
+    return newUser._id
   }
 
   static async login ({ username, password }) {
@@ -49,7 +43,7 @@ export class GuessUserRepository {
     const isValid = await bcrypt.compare(password, user.password)
     if (!isValid) throw new Error('Invalid password')
 
-    const publicUser = { id: user.id, username: user.username }
+    const publicUser = { id: user._id, username: user.username }
 
     return publicUser
   }
