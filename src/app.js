@@ -26,7 +26,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(session({
   secret: process.env.SESSION_SECRET,
-  resave: true,
+  resave: false,
   saveUninitialized: true,
   cookie: { secure: process.env.NODE_ENV === 'production', sameSite: 'lax' }
 }))
@@ -154,6 +154,7 @@ app.post('/login', async (req, res) => {
 
 app.post('/refresh-login', (req, res) => {
   const user = req.session.user
+  console.log(user)
 
   if (!user) {
     return res.status(401).send('Unauthorized')
