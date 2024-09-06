@@ -37,10 +37,10 @@ export class UserRepository {
     Validation.password(password)
 
     const user = await User.findOne({ username })
-    if (!user) throw new Error('User not found')
+    if (!user) throw new CustomError('ValidationError', 'User not found')
 
     const isValid = await bcrypt.compare(password, user.password)
-    if (!isValid) throw new Error('Invalid password')
+    if (!isValid) throw new CustomError('ValidationError', 'Invalid password')
 
     const publicUser = { id: user._id, username: user.username }
 
