@@ -1,4 +1,5 @@
 import { Record } from '../models/schemas.js'
+import { CustomError } from './login.js'
 
 const validateForm = (form) => {
   const isNumeric = (value) => !isNaN(value)
@@ -12,13 +13,12 @@ const validateForm = (form) => {
     isNumeric(form.time) && isGreaterThan(parseFloat(form.time), 10000)
   const checkDate =
     isNumeric(form.date) && isRecentDate(parseFloat(form.date), 5)
-  let error
 
   if (!checkTime) {
-    error = new Error('Invalid time')
+    throw new CustomError('ValidateError', 'Invalid time')
   }
   if (!checkDate) {
-    error = new Error('Invalid date')
+    throw new CustomError('ValidateError', 'Invalid date')
   }
 
   return checkTime && checkDate

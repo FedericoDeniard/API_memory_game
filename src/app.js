@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser'
 
 import { Record } from './models/schemas.js'
 import { checkNewRecord, validateForm } from './controllers/functions.js'
-import { UserRepository } from './controllers/login.js'
+import { UserRepository, CustomError } from './controllers/login.js'
 import jwt from 'jsonwebtoken'
 
 dotenv.config()
@@ -39,18 +39,15 @@ app.use((req, res, next) => {
       const data = jwt.verify(token, process.env.JWT_SECRET)
       req.session.user = data
     }
-  } catch (error) {
-  }
+  } catch (error) {}
   next()
 })
-
-app.set('view engine', 'ejs')
 
 app.post('/leaderboard/new_record', async (req, res) => {
   const user = req.session.user
 
   if (!user) {
-    return res.status(403).send({ message: 'Need to be logged in to add a record' })
+    return res.status(403).send(new CustomError('Unauthorized', 'Not logged in'))
   }
 
   try {
@@ -58,7 +55,7 @@ app.post('/leaderboard/new_record', async (req, res) => {
     const form = { time, date }
 
     if (!validateForm(form)) {
-      return res.status(400).send()
+      return res.status(400).send(new CustomError('ValidateError', 'Invalid form'))
     }
 
     const recordExists = await Record.findOne({ username: user.user })
@@ -74,15 +71,14 @@ app.post('/leaderboard/new_record', async (req, res) => {
         )
         res.status(200).send({ message: 'Record updated' })
       } else {
-        res.status(400).send({ message: 'Record hasn\'t been beaten' })
+        res.status(400).send(new CustomError('ValidateError', 'A best record already exists'))
       }
     } else {
       await Record.create({ username: user.user, time, date })
       res.status(200).send({ message: 'Record created' })
     }
   } catch (error) {
-    console.error('Error saving record:', error)
-    res.status(500).send(error)
+    res.status(500).send(new CustomError('InternalError', 'Something went wrong'))
   }
 })
 
@@ -101,7 +97,7 @@ app.get('/top-leaderboard', async (req, res) => {
 
     return res.status(200).send(processedData)
   } catch (error) {
-    return res.status(500).send(error)
+    return res.status(500).send(CustomError('InternalError', error.message))
   }
 })
 
@@ -119,16 +115,11 @@ app.get('/last-leaderboard', async (req, res) => {
     }))
     return res.status(200).send(processedData)
   } catch (error) {
-    return res.status(500).send(error)
+    return res.status(500).send(CustomError('InternalError', error.message))
   }
 })
 
 // Login
-
-app.get('/a', (req, res) => {
-  const user = req.session.user
-  res.render('index', { user })
-})
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body
@@ -148,16 +139,15 @@ app.post('/login', async (req, res) => {
       })
       .send(user)
   } catch (error) {
-    return res.status(401).send(error.message) // TODO This can give too much information
+    return res.status(401).send(new CustomError('Unauthorized', error.message))
   }
 })
 
 app.post('/refresh-login', (req, res) => {
   const user = req.session.user
-  console.log(user)
 
   if (!user) {
-    return res.status(401).send('Unauthorized')
+    return res.status(401).send(new CustomError('Unauthorized', 'Not logged in'))
   }
 
   return res.status(200).send({
@@ -173,21 +163,12 @@ app.post('/register', async (req, res) => {
     const _id = await UserRepository.create({ username, password })
     res.status(200).send({ id: _id })
   } catch (error) {
-    res.status(400).send(error.message) // TODO This can give too much information
+    res.status(400).json(new CustomError(error.name, error.message))
   }
 })
 
 app.post('/logout', (req, res) => {
   res.clearCookie('access_token').json({ message: 'Logged out' })
-})
-
-app.get('/protected', (req, res) => {
-  const user = req.session.user
-
-  if (!user) {
-    return res.status(403).send('Unauthorized')
-  }
-  res.render('protected', { user })
 })
 
 const PORT = process.env.PORT || 3000
