@@ -26,8 +26,8 @@ const validateForm = (form) => {
 
 export { validateForm }
 
-export const checkNewRecord = async (time, id) => {
-  const user = await Record.findOne({ id })
+export const checkNewRecord = async (time, username) => {
+  const user = await Record.findOne({ username })
   let isNewRecord = false
   if (user.time > time) {
     isNewRecord = true

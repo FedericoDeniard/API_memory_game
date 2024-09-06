@@ -26,7 +26,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(session({
   secret: process.env.SESSION_SECRET,
-  resave: false,
+  resave: true,
   saveUninitialized: true,
   cookie: { secure: process.env.NODE_ENV === 'production', sameSite: 'lax' }
 }))
@@ -61,16 +61,14 @@ app.post('/leaderboard/new_record', async (req, res) => {
       return res.status(400).send()
     }
 
-    const userID = new mongoose.Types.ObjectId(user.id)
-
-    const recordExists = await Record.findOne({ id: userID })
+    const recordExists = await Record.findOne({ username: user.user })
 
     if (recordExists) {
-      const isNewRecord = await checkNewRecord(time, userID)
+      const isNewRecord = await checkNewRecord(time, user.user)
 
       if (isNewRecord) {
         await Record.findOneAndUpdate(
-          { id: userID },
+          { username: user.user },
           { $set: { time, date } },
           { new: true }
         )
@@ -79,7 +77,7 @@ app.post('/leaderboard/new_record', async (req, res) => {
         res.status(400).send({ message: 'Record hasn\'t been beaten' })
       }
     } else {
-      await Record.create({ id: userID, username: user.user, time, date })
+      await Record.create({ username: user.user, time, date })
       res.status(200).send({ message: 'Record created' })
     }
   } catch (error) {
@@ -145,7 +143,7 @@ app.post('/login', async (req, res) => {
       .cookie('access_token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 60 // 1 hora
       })
       .send(user)
@@ -154,23 +152,17 @@ app.post('/login', async (req, res) => {
   }
 })
 
-app.post('/refresh-login', async (req, res) => {
+app.post('/refresh-login', (req, res) => {
   const user = req.session.user
 
   if (!user) {
     return res.status(401).send('Unauthorized')
   }
-  const token = jwt.sign({ id: user.id, user: user.username }, process.env.JWT_SECRET, {
-    expiresIn: '1h'
+
+  return res.status(200).send({
+    id: user.id,
+    username: user.user
   })
-  return res
-    .cookie('access_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 1000 * 60 * 60 // 1 hora
-    })
-    .send(user)
 })
 
 app.post('/register', async (req, res) => {
