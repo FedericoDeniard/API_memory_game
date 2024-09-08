@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
-import { CustomError, Validation } from './functions'
-import { User } from '../models/schemas'
+import { CustomError, Validation } from './functions.js'
+import { User } from '../models/schemas.js'
 
 export class UserRepository {
   static async create ({ username, password }) {
