@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser'
 
 import { Record } from './models/schemas.js'
 import { checkNewRecord, validateForm, CustomError } from './controllers/functions.js'
-import { UserRepository } from './controllers/login.js'
+import { UserRepository } from './controllers/users.js'
 import jwt from 'jsonwebtoken'
 
 dotenv.config()
