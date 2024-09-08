@@ -1,1 +1,40 @@
+# Dependencias de Node.js
+node_modules/
+
+# Archivos de entorno
 .env
+
+# Archivos de log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Directorios temporales
+/tmp
+/dist
+/build
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de editores de texto y sistemas de control de versiones
+.idea/
+.vscode/
+*.swp
+
+# Archivos de cobertura de pruebas
+coverage/
+
+# Archivos de configuración de producción
+.env.production
+
+# Paquetes y distribuciones
+*.tgz
+
+# Caches
+.cache/
+.pnp.*
+
+old
