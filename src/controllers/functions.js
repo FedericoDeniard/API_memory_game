@@ -1,5 +1,4 @@
 import { Record } from '../models/schemas.js'
-import { CustomError } from './login.js'
 
 const validateForm = (form) => {
   const isNumeric = (value) => !isNaN(value)
@@ -33,4 +32,24 @@ export const checkNewRecord = async (time, username) => {
     isNewRecord = true
   }
   return isNewRecord
+}
+
+export class CustomError extends Error {
+  constructor (name, message) {
+    super(message)
+    this.name = name
+  }
+}
+
+export class Validation {
+  static username (username) {
+    if (typeof username !== 'string') throw new CustomError('ValidationError', 'Username must be a string')
+    if (username.length < 3) throw new CustomError('ValidationError', 'Username must be at least 3 characters long')
+    if (username.length > 10) throw new CustomError('ValidationError', 'Username must be at most 10 characters long')
+  }
+
+  static password (password) {
+    if (typeof password !== 'string') throw new CustomError('ValidationCustomError', 'Password must be a string')
+    if (password.length < 6) throw new Error('ValidationError', 'Password must be at least 6 characters long')
+  }
 }

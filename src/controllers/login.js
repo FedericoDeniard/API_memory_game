@@ -1,19 +1,6 @@
-import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
-
-const UserSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  password: {
-    type: String,
-    required: true
-  }
-})
-
-const User = mongoose.model('User', UserSchema)
+import { CustomError, Validation } from './functions'
+import { User } from '../models/schemas'
 
 export class UserRepository {
   static async create ({ username, password }) {
@@ -45,25 +32,5 @@ export class UserRepository {
     const publicUser = { id: user._id, username: user.username }
 
     return publicUser
-  }
-}
-
-class Validation {
-  static username (username) {
-    if (typeof username !== 'string') throw new CustomError('ValidationError', 'Username must be a string')
-    if (username.length < 3) throw new CustomError('ValidationError', 'Username must be at least 3 characters long')
-    if (username.length > 10) throw new CustomError('ValidationError', 'Username must be at most 10 characters long')
-  }
-
-  static password (password) {
-    if (typeof password !== 'string') throw new CustomError('ValidationCustomError', 'Password must be a string')
-    if (password.length < 6) throw new Error('ValidationError', 'Password must be at least 6 characters long')
-  }
-}
-
-export class CustomError extends Error {
-  constructor (name, message) {
-    super(message)
-    this.name = name
   }
 }

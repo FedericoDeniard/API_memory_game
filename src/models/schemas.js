@@ -6,6 +6,18 @@ const RecordSchema = new mongoose.Schema({
   date: { type: Number, required: true }
 })
 
-const Record = mongoose.model('Record', RecordSchema)
+export const Record = mongoose.model('Record', RecordSchema)
 
-export { Record }
+const UserSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true
+  }
+})
+
+export const User = mongoose.model('User', UserSchema)
